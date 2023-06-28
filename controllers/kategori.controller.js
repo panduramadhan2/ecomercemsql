@@ -1,37 +1,30 @@
+const { where } = require("sequelize");
 const db = require("../models/bundle.model");
-const func = require("../libs/function");
-const { v4: uuidv4 } = require("uuid");
 
 exports.create = async (req, res) => {
   const data = {
-    id: uuidv4(),
-    title: req.body.title,
-    description: req.body.description,
-    full_description: req.body.full_description,
-    price: req.body.price,
-    image: req.file.filename,
-    category_id: req.body.category_id,
-    url: func.convertToSlug(req.body.title + " " + Math.random(1000)),
+    name: req.body.name,
   };
-  db.produk
+
+  db.kategori
     .create(data)
     .then((result) => {
       res.send({
         code: 200,
-        message: "Berhasil menambahkan data",
+        message: "Berhasil menyimpan data",
         data: result,
       });
     })
     .catch((err) => {
       res.status(500).send({
         code: 500,
-        message: "Gagal menambahkan data",
+        message: "Gagal menyimpan data",
       });
     });
 };
 
 exports.findAll = async (req, res) => {
-  db.produk
+  db.kategori
     .findAll()
     .then((result) => {
       if (result.length > 0) {
@@ -41,24 +34,23 @@ exports.findAll = async (req, res) => {
           data: result,
         });
       } else {
-        res.status(404).send({
+        res.send({
           code: 404,
           message: "Tidak ada data",
-          data: result,
         });
       }
     })
     .catch((err) => {
       res.status(500).send({
         code: 500,
-        message: "Gagal meretrive data",
+        message: "Gagal retrive data",
       });
     });
 };
 
 exports.findOne = async (req, res) => {
   const id = req.params.id;
-  db.produk
+  db.kategori
     .findOne({ where: { id: id } })
     .then((result) => {
       res.send({
@@ -70,7 +62,7 @@ exports.findOne = async (req, res) => {
     .catch((err) => {
       res.status(500).send({
         code: 500,
-        message: "Gagal meretrive data",
+        message: "Gagal retrive data",
       });
     });
 };
@@ -78,27 +70,24 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   const id = req.params.id;
   const data = {
-    title: req.body.title,
-    description: req.body.description,
-    full_description: req.body.full_description,
-    price: req.body.price,
-    category_id: req.body.category_id,
+    name: req.body.name,
   };
-
-  if (req.file != undefined) {
-    //mengubah gambar
-    data["image"] = req.file.filename;
-  }
-
-  db.produk
+  db.kategori
     .update(data, {
       where: { id: id },
     })
     .then((result) => {
-      res.send({
-        code: 200,
-        message: "Sukses update data",
-      });
+      if (result[0]) {
+        res.send({
+          code: 200,
+          message: "Sukses update data",
+        });
+      } else {
+        res.status(422).send({
+          code: 422,
+          message: "Gagal update data field error",
+        });
+      }
     })
     .catch((err) => {
       res.status(500).send({
@@ -111,16 +100,14 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.params.id;
 
-  db.produk
+  db.kategori
     .destroy({
-      where: {
-        id: id,
-      },
+      where: { id: id },
     })
     .then((result) => {
       res.send({
         code: 200,
-        message: "succes delete data",
+        message: "Sukses delete data",
       });
     })
     .catch((err) => {
